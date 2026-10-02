@@ -22,4 +22,4 @@ Aplicación web interactiva desarrollada en Python para el análisis de indicado
 
 ## 📦 Demostración
 Puedes probar la aplicación en vivo en el siguiente enlace:
-[Dashboard en Streamlit Cloud](https://dashboard-farmaceutico-b3tzltbs3ftvqjesgoahz6.streamlit.app/)
+[Dashboard en Streamlit Cloud](https://dashboardfarmaceutico-rxkczvxuyxuemrdwdyvbc3.streamlit.app/)
