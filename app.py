@@ -1,3 +1,4 @@
+import io
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -9,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estilo CSS personalizado para limpiar espacio e interfaces
+# Estilo CSS personalizado
 st.markdown("""
     <style>
     .block-container { padding-top: 1.8rem; padding-bottom: 2rem; }
@@ -30,6 +31,13 @@ def cargar_datos():
     }
     return pd.DataFrame(data)
 
+# Función auxiliar para convertir el dataframe filtrado a Excel
+def convertir_df_a_excel(df_to_export):
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+        df_to_export.to_excel(writer, index=False, sheet_name="Reporte_Inventario")
+    return buffer.getvalue()
+
 df = cargar_datos()
 
 # Encabezado principal
@@ -39,7 +47,7 @@ st.divider()
 
 # Sidebar - Filtros
 with st.sidebar:
-    st.header("⚙️ Parámetros")
+    st.header("⚙️️ Parámetros")
     categorias_sel = st.multiselect(
         "Filtrar por Categoría:",
         options=df["Categoría"].unique(),
@@ -71,7 +79,7 @@ with col4:
 
 st.markdown("##")
 
-# Pestañas para organizar la información
+# Pestañas
 tab_ventas, tab_stock, tab_tabla = st.tabs([
     "📊 Análisis de Ventas", 
     "📦 Control de Stock", 
@@ -107,8 +115,6 @@ with tab_ventas:
 # Pestaña 2: Stock
 with tab_stock:
     df_stock = df_filtrado.sort_values("Stock_Actual", ascending=False)
-    
-    # Marcamos en rojo si está crítico
     colors = ["#EF4444" if val < 50 else "#0EA5E9" for val in df_stock["Stock_Actual"]]
     
     fig_stock = px.bar(
@@ -131,11 +137,25 @@ with tab_stock:
     
     st.plotly_chart(fig_stock, use_container_width=True)
 
-# Pestaña 3: Tabla Detallada
+# Pestaña 3: Tabla Detallada y Exportación
 with tab_tabla:
-    st.subheader("Detalle del Inventario y Ventas")
+    col_header, col_btn = st.columns([3, 1])
     
-    # Formateo de la tabla de datos
+    with col_header:
+        st.subheader("Detalle del Inventario y Ventas")
+    
+    with col_btn:
+        # Generar archivo Excel al hacer clic
+        excel_data = convertir_df_a_excel(df_filtrado)
+        st.download_button(
+            label="📥 Descargar en Excel",
+            data=excel_data,
+            file_name="reporte_farmaceutico_filtrado.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
+    
+    # Tabla interactiva
     st.dataframe(
         df_filtrado,
         column_config={
